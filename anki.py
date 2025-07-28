@@ -63,6 +63,9 @@ class AnkiClient:
 
     def gui_answer_card(self, ease: int) -> None:
         self._request("guiAnswerCard", {"ease": ease})
+    
+    def gui_undo(self) -> None:
+        self._request("guiUndo")
 
     def cards_info(self, card_ids: list) -> list:
         return self._request("cardsInfo", {"cards": card_ids})
@@ -132,7 +135,7 @@ mcp = FastMCP("AnkiTools")
 
 
 @mcp.tool()
-def start_learning() -> dict:
+def start_learning() -> Dict:
     """Start a new learning session.
 
     The `question` field contains the properly formatted question to ask the user.
@@ -143,7 +146,7 @@ def start_learning() -> dict:
 
 
 @mcp.tool()
-def answer_and_get_next_card(ease: int) -> dict:
+def answer_and_get_next_card(ease: int) -> Dict:
     """Answer the current card and get the next one.
 
     Args:
@@ -172,6 +175,15 @@ def answer_and_get_next_card(ease: int) -> dict:
             "question": "",
             "answer": "",
         }
+
+@mcp.tool()
+def undo_last_answer() -> Dict:
+    """Undo the last answer."""
+    logger.info("Undoing last answer")
+    anki.gui_undo()
+    return {
+        "success": True,
+    }
 
 
 if __name__ == "__main__":
