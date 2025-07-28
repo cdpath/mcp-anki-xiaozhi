@@ -4,8 +4,7 @@ import logging
 import json
 import urllib.request
 import urllib.error
-import re
-import os
+import time
 from typing import Any, Dict, Optional
 from bs4 import BeautifulSoup
 
@@ -158,6 +157,7 @@ def answer_and_get_next_card(ease: int) -> dict:
 
     logger.info("Answering card with ease=%s", ease)
     anki.gui_answer_card(ease)
+    time.sleep(1)
 
     # Try to get next card
     try:
