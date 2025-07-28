@@ -10,14 +10,14 @@ from typing import Any, Dict, Optional
 from bs4 import BeautifulSoup
 
 
-logger = logging.getLogger('AnkiTools')
+logger = logging.getLogger("AnkiTools")
 
 VOCAB_MODELS = ["Vocabulary", "Phrase"]
 
 # Fix UTF-8 encoding for Windows console
-if sys.platform == 'win32':
-    sys.stderr.reconfigure(encoding='utf-8')
-    sys.stdout.reconfigure(encoding='utf-8')
+if sys.platform == "win32":
+    sys.stderr.reconfigure(encoding="utf-8")
+    sys.stdout.reconfigure(encoding="utf-8")
 
 
 class AnkiConnectError(Exception):
@@ -38,11 +38,15 @@ class AnkiClient:
         }
         request_data = json.dumps(payload).encode("utf-8")
         try:
-            with urllib.request.urlopen(urllib.request.Request(self.endpoint, data=request_data)) as resp:
+            with urllib.request.urlopen(
+                urllib.request.Request(self.endpoint, data=request_data)
+            ) as resp:
                 response: Dict[str, Any] = json.load(resp)
         except urllib.error.URLError as e:
             logger.error("Unable to reach Anki-Connect @ %s: %s", self.endpoint, e)
-            raise AnkiConnectError("Anki-Connect is not reachable – is Anki running?") from e
+            raise AnkiConnectError(
+                "Anki-Connect is not reachable – is Anki running?"
+            ) from e
 
         if set(response.keys()) != {"result", "error"}:
             raise AnkiConnectError("Invalid response from Anki-Connect: %s" % response)
@@ -66,16 +70,23 @@ class AnkiClient:
 
 
 def _strip_html(html_content: str) -> str:
+    """Extract text while preserving some structure and removing specific elements."""
     if not html_content:
         return ""
-    soup = BeautifulSoup(html_content, 'html.parser')
-    for br in soup.find_all('br'):
-        br.replace_with('\n')
-    for p in soup.find_all('p'):
-        p.insert_after('\n')
+
+    soup = BeautifulSoup(html_content, "html.parser")
+    for audio_div in soup.find_all("div", class_="audio"):
+        audio_div.decompose()
+    for footnote_dl in soup.find_all("dl", class_="footnote"):
+        footnote_dl.decompose()
+    for br in soup.find_all("br"):
+        br.replace_with("\n")
+    for p in soup.find_all("p"):
+        p.insert_after("\n")
+
     text = soup.get_text()
-    lines = [line.strip() for line in text.split('\n')]
-    text = '\n'.join(line for line in lines if line)
+    lines = [line.strip() for line in text.split("\n")]
+    text = "\n".join(line for line in lines if line)
     return text
 
 
@@ -85,9 +96,9 @@ def _format_question(model_name: str, template: str, question_text: str) -> str:
     if model_name in VOCAB_MODELS:
         if template == "Card 2":  # Chinese to English
             return f"{question_text} 的英文是什么？"
-        elif template == "Card 1":  # English to Chinese  
+        elif template == "Card 1":  # English to Chinese
             return f"{question_text} 是什么意思？"
-    
+
     # Default: use original question
     return question_text
 
@@ -123,7 +134,7 @@ mcp = FastMCP("AnkiTools")
 @mcp.tool()
 def start_learning() -> dict:
     """Start a new learning session.
-    
+
     The `question` field contains the properly formatted question to ask the user.
     DO NOT reveal the `answer` to the user before they respond!
     """
@@ -137,7 +148,7 @@ def answer_and_get_next_card(ease: int) -> dict:
 
     Args:
         ease: 1=Again, 2=Hard, 3=Good, 4=Easy
-        
+
     For LLM: Judge the user's answer quality and map to ease:
     - Wrong = 1, Struggled but correct = 2, Normal correct = 3, Easy = 4
     """
@@ -163,4 +174,4 @@ def answer_and_get_next_card(ease: int) -> dict:
 
 
 if __name__ == "__main__":
-    mcp.run(transport="stdio") 
+    mcp.run(transport="stdio")
