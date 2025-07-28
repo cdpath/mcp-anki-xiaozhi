@@ -27,3 +27,4 @@ uv run mcp_pipe.py anki.py
 - `pyproject.toml`: Project configuration and dependencies | 项目配置和依赖
 - `uv.lock`: Lock file for reproducible dependency resolution | 依赖解析锁定文件
 # llm.txt
+# llm.txt
