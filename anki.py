@@ -94,9 +94,9 @@ def _format_question(model_name: str, template: str, question_text: str) -> str:
     """Format question based on card type and template."""
     # Get vocabulary model names from environment (comma-separated)
     if model_name in VOCAB_MODELS:
-        if template == "Card 2":  # Chinese to English
+        if template == "card2":  # Chinese to English
             return f"{question_text} 的英文是什么？"
-        elif template == "Card 1":  # English to Chinese
+        elif template == "card1":  # English to Chinese
             return f"{question_text} 是什么意思？"
 
     # Default: use original question
@@ -119,6 +119,7 @@ def _get_current_card_info() -> dict:
     card_info = {
         "success": True,
         "model_name": model_name,
+        "template": template,
         "deck_name": card.get("deckName", ""),
         "question": formatted_question,
         "answer": _strip_html(card.get("answer", "")),
