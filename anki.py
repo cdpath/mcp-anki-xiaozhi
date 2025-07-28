@@ -7,6 +7,7 @@ import urllib.error
 import re
 import os
 from typing import Any, Dict, Optional
+from bs4 import BeautifulSoup
 
 
 logger = logging.getLogger('AnkiTools')
@@ -64,15 +65,18 @@ class AnkiClient:
         return self._request("cardsInfo", {"cards": card_ids})
 
 
-def _strip_html(text: str) -> str:
-    """Remove HTML tags and style blocks from text."""
-    if not text:
+def _strip_html(html_content: str) -> str:
+    if not html_content:
         return ""
-    text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.DOTALL | re.IGNORECASE)
-    text = re.sub(r"<script[^>]*>.*?</script>", "", text, flags=re.DOTALL | re.IGNORECASE)
-    text = re.sub(r"<dl class=\"footnote\"[^>]*>.*?</dl>", "", text, flags=re.DOTALL | re.IGNORECASE)
-    text = re.sub(r"<[^>]+>", "", text)
-    return text.strip()
+    soup = BeautifulSoup(html_content, 'html.parser')
+    for br in soup.find_all('br'):
+        br.replace_with('\n')
+    for p in soup.find_all('p'):
+        p.insert_after('\n')
+    text = soup.get_text()
+    lines = [line.strip() for line in text.split('\n')]
+    text = '\n'.join(line for line in lines if line)
+    return text
 
 
 def _format_question(model_name: str, template: str, question_text: str) -> str:
