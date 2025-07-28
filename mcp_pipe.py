@@ -19,6 +19,9 @@ import sys
 import random
 from dotenv import load_dotenv
 
+os.environ['no_proxy'] = '*'
+os.environ['NO_PROXY'] = '*'
+
 # Load environment variables from .env file
 load_dotenv()
 
